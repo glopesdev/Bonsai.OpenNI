@@ -5,22 +5,21 @@ using System.Reactive.Linq;
 namespace Bonsai.OpenNI
 {
     [Description("Creates and connects to an OpenNI device.")]
-    public class Device : Source<DeviceInstance>
+    public class Device : Source<OpenNIWrapper.Device>
     {
         [Description("The index of the device.")]
         public int Index { get; set; }
 
-        public override IObservable<DeviceInstance> Generate()
+        public override IObservable<OpenNIWrapper.Device> Generate()
             => Observable.Defer(() =>
                 {
                     var context = Context.Instance;
                     var devices = OpenNIWrapper.OpenNI.EnumerateDevices();
                     var deviceInfo = devices[Index];
                     var device = deviceInfo.OpenDevice();
-                    var deviceInstance = new DeviceInstance(this, device);
                     return Observable
-                        .Return(deviceInstance)
-                        .Concat(Observable.Never<DeviceInstance>())
+                        .Return(device)
+                        .Concat(Observable.Never<OpenNIWrapper.Device>())
                         .Finally(() => device.Close());
                 });
     }
