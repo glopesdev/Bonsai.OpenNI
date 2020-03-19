@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 
 namespace Bonsai.OpenNI
 {
+    [DefaultProperty("Index")]
     [Description("Creates and connects to an OpenNI device.")]
     public class Device : Source<OpenNIWrapper.Device>
     {
