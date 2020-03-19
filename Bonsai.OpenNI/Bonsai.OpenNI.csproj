@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Title>Bonsai - OpenNI</Title>
     <Description>A Bonsai library for interfacing with depth cameras through OpenNI 2.</Description>
-    <Version>1.0.0-beta02</Version>
+    <Version>1.0.0</Version>
     <PackageTags>bonsai, vision, openni</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <LangVersion>8.0</LangVersion>
