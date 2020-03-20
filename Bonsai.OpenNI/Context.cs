@@ -14,7 +14,8 @@ namespace Bonsai.OpenNI
 
         Context()
         {
-            _ = OpenNIWrapper.OpenNI.Initialize();
+            if (OpenNIWrapper.OpenNI.Initialize() != OpenNIWrapper.OpenNI.Status.Ok)
+                throw new Exception("Failed to initialize OpenNI!");
         }
 
         ~Context()
