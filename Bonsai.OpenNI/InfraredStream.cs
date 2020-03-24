@@ -8,6 +8,7 @@ namespace Bonsai.OpenNI
         public InfraredStream()
             : base(OpenNIWrapper.Device.SensorType.Ir)
         {
+            PixelFormat = OpenNIWrapper.VideoMode.PixelFormat.Gray8;
         }
 
     }

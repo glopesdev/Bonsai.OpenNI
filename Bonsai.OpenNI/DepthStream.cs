@@ -8,6 +8,7 @@ namespace Bonsai.OpenNI
         public DepthStream()
             : base(OpenNIWrapper.Device.SensorType.Depth)
         {
+            PixelFormat = OpenNIWrapper.VideoMode.PixelFormat.Depth1Mm;
         }
 
     }

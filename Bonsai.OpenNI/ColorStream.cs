@@ -8,6 +8,7 @@ namespace Bonsai.OpenNI
         public ColorStream()
             : base(OpenNIWrapper.Device.SensorType.Color)
         {
+            PixelFormat = OpenNIWrapper.VideoMode.PixelFormat.Rgb888;
         }
 
     }

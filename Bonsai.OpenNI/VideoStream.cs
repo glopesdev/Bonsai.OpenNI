@@ -1,19 +1,42 @@
 ﻿using OpenCV.Net;
 using System;
+using System.ComponentModel;
 using System.Reactive.Linq;
 
 namespace Bonsai.OpenNI
 {
     public abstract class VideoStream : Combinator<OpenNIWrapper.Device, IplImage>
     {
+        const int DefaultFrameRate = 30;
+        static readonly Size DefaultSize = new Size(640, 480);
+
         readonly OpenNIWrapper.Device.SensorType sensorType;
 
         public VideoStream(OpenNIWrapper.Device.SensorType sensorType)
             => this.sensorType = sensorType;
 
+        [Description("The format of the image.")]
+        public OpenNIWrapper.VideoMode.PixelFormat PixelFormat { get; set; }
+
+        [Description("The size of the image.")]
+        public Size Size { get; set; } = DefaultSize;
+
+        [Description("The frame rate in frames per secPixelFormatond.")]
+        [DefaultValue(DefaultFrameRate)]
+        public int FrameRate { get; set; } = DefaultFrameRate;
+
         public override IObservable<IplImage> Process(IObservable<OpenNIWrapper.Device> source)
             => source
-                .Select(device => device.CreateVideoStream(sensorType))
+                .Select(device => {
+                    var stream = device.CreateVideoStream(sensorType);
+                    stream.VideoMode = new OpenNIWrapper.VideoMode
+                    {
+                        DataPixelFormat = PixelFormat,
+                        Fps = FrameRate,
+                        Resolution = new OpenNIWrapper.Size(this.Size.Width, this.Size.Height),
+                    };
+                    return stream;
+                })
                 .Where(stream => stream.IsValid && stream.Start() == OpenNIWrapper.OpenNI.Status.Ok)
                 .SelectMany(stream =>
                     Observable.FromEvent<OpenNIWrapper.VideoStream.VideoStreamNewFrame, OpenNIWrapper.VideoStream>(
@@ -24,34 +47,45 @@ namespace Bonsai.OpenNI
                 {
                     using var frame = stream.ReadFrame();
                     var size = new Size(frame.FrameSize.Width, frame.FrameSize.Height);
-                    var image = (IplImage)null;
-                    var frameHeader = (Mat)null;
 
                     switch (frame.VideoMode.DataPixelFormat)
                     {
                         case OpenNIWrapper.VideoMode.PixelFormat.Rgb888:
-                            image = new IplImage(size, IplDepth.U8, 3);
-                            frameHeader = new Mat(size, Depth.U8, 3, frame.Data, frame.DataStrideBytes);
-                            break;
+                            {
+                                var image = new IplImage(size, IplDepth.U8, 3);
+                                var frameHeader = new Mat(size, Depth.U8, 3, frame.Data, frame.DataStrideBytes);
+                                CV.Copy(frameHeader, image);
+                                return image;
+                            }
 
                         case OpenNIWrapper.VideoMode.PixelFormat.Gray8:
-                            image = new IplImage(size, IplDepth.U8, 1);
-                            frameHeader = new Mat(size, Depth.U8, 1, frame.Data, frame.DataStrideBytes);
-                            break;
+                            {
+                                var image = new IplImage(size, IplDepth.U8, 1);
+                                var frameHeader = new Mat(size, Depth.U8, 1, frame.Data, frame.DataStrideBytes);
+                                CV.Copy(frameHeader, image);
+                                return image;
+                            }
 
                         case OpenNIWrapper.VideoMode.PixelFormat.Depth1Mm:
                         case OpenNIWrapper.VideoMode.PixelFormat.Depth100Um:
                         case OpenNIWrapper.VideoMode.PixelFormat.Gray16:
-                            image = new IplImage(size, IplDepth.U16, 1);
-                            frameHeader = new Mat(size, Depth.U16, 1, frame.Data, frame.DataStrideBytes);
-                            break;
+                            {
+                                // convert to 1F32 because threshold does not support 1U16
+                                var image = new IplImage(size, IplDepth.F32, 1);
+                                var frameHeader = new Mat(size, Depth.U16, 1, frame.Data, frame.DataStrideBytes);
+                                CV.Convert(frameHeader, image);
+                                return image;
+                            }
 
                         default:
                             throw new InvalidOperationException("Pixel format is not acceptable for bitmap converting.");
                     }
-
-                    CV.Copy(frameHeader, image);
-                    return image;
                 });
+
+        bool ShouldSerializeSize()
+            => Size != DefaultSize;
+
+        void ResetSize()
+            => Size = DefaultSize;
     }
 }
