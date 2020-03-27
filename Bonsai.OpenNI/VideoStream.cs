@@ -8,6 +8,7 @@ namespace Bonsai.OpenNI
     public abstract class VideoStream : Combinator<OpenNIWrapper.Device, IplImage>
     {
         const int DefaultFrameRate = 30;
+        const bool DefaultMirroring = false;
         static readonly Size DefaultSize = new Size(640, 480);
 
         readonly OpenNIWrapper.Device.SensorType sensorType;
@@ -21,13 +22,18 @@ namespace Bonsai.OpenNI
         [Description("The size of the image.")]
         public Size Size { get; set; } = DefaultSize;
 
-        [Description("The frame rate in frames per secPixelFormatond.")]
+        [Description("The frame rate in frames per second.")]
         [DefaultValue(DefaultFrameRate)]
         public int FrameRate { get; set; } = DefaultFrameRate;
+
+        [Description("Mirrors the image when true.")]
+        [DefaultValue(DefaultMirroring)]
+        public bool Mirroring { get; set; } = DefaultMirroring;
 
         public override IObservable<IplImage> Process(IObservable<OpenNIWrapper.Device> source)
             => source
                 .Select(device => {
+
                     var stream = device.CreateVideoStream(sensorType);
                     stream.VideoMode = new OpenNIWrapper.VideoMode
                     {
@@ -35,6 +41,7 @@ namespace Bonsai.OpenNI
                         Fps = FrameRate,
                         Resolution = new OpenNIWrapper.Size(this.Size.Width, this.Size.Height),
                     };
+                    stream.Mirroring = Mirroring;
                     return stream;
                 })
                 .Where(stream => stream.IsValid && stream.Start() == OpenNIWrapper.OpenNI.Status.Ok)
@@ -82,10 +89,10 @@ namespace Bonsai.OpenNI
                     }
                 });
 
-        bool ShouldSerializeSize()
+        public bool ShouldSerializeSize()
             => Size != DefaultSize;
 
-        void ResetSize()
+        public void ResetSize()
             => Size = DefaultSize;
     }
 }
