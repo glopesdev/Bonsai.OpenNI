@@ -5,11 +5,14 @@ namespace Bonsai.OpenNI
     [Description("Subscribes to the native stream of depth images from a OpenNI device.")]
     public class DepthStream : VideoStream
     {
+        const OpenNIWrapper.VideoMode.PixelFormat DefaultPixelFormat = OpenNIWrapper.VideoMode.PixelFormat.Depth1Mm;
+
         public DepthStream()
             : base(OpenNIWrapper.Device.SensorType.Depth)
         {
-            PixelFormat = OpenNIWrapper.VideoMode.PixelFormat.Depth1Mm;
         }
 
+        [DefaultValue(DefaultPixelFormat)]
+        public override OpenNIWrapper.VideoMode.PixelFormat PixelFormat { get; set; } = DefaultPixelFormat;
     }
 }

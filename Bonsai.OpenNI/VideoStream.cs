@@ -16,8 +16,7 @@ namespace Bonsai.OpenNI
         public VideoStream(OpenNIWrapper.Device.SensorType sensorType)
             => this.sensorType = sensorType;
 
-        [Description("The format of the image.")]
-        public OpenNIWrapper.VideoMode.PixelFormat PixelFormat { get; set; }
+        public abstract OpenNIWrapper.VideoMode.PixelFormat PixelFormat { get; set; }
 
         [Description("The size of the image.")]
         public Size Size { get; set; } = DefaultSize;
@@ -32,7 +31,8 @@ namespace Bonsai.OpenNI
 
         public override IObservable<IplImage> Process(IObservable<OpenNIWrapper.Device> source)
             => source
-                .Select(device => {
+                .SelectMany(device =>
+                {
                     var stream = device.CreateVideoStream(sensorType);
                     stream.VideoMode = new OpenNIWrapper.VideoMode
                     {
@@ -41,10 +41,7 @@ namespace Bonsai.OpenNI
                         Resolution = new OpenNIWrapper.Size(this.Size.Width, this.Size.Height),
                     };
                     stream.Mirroring = Mirroring;
-                    return stream;
-                })
-                .SelectMany(stream =>
-                {
+
                     if (!stream.IsValid)
                         return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("OpenNI device stream is not valid."));
 

@@ -29,11 +29,13 @@ namespace Bonsai.OpenNI
             && index >= 0 
             && index < OpenNIWrapper.OpenNI.EnumerateDevices().Length;
 
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) 
-            => sourceType == typeof(string);
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            => sourceType == typeof(string)
+            || base.CanConvertFrom(context, sourceType);
 
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) 
-            => destinationType == typeof(string);
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+            => destinationType == typeof(string)
+            || base.CanConvertTo(context, destinationType);
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
