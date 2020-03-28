@@ -33,7 +33,7 @@ namespace Bonsai.OpenNI
             => sourceType == typeof(string);
 
         public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) 
-            => destinationType == typeof(int);
+            => destinationType == typeof(string);
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
@@ -41,7 +41,7 @@ namespace Bonsai.OpenNI
             {
                 var regex = new Regex(@"^\d+");
                 var results = regex.Matches(str);
-                if (results.Count > 0 && int.TryParse(results[0].Value, out var index))
+                if (results.Count > 0 && int.TryParse(results[0].Value, NumberStyles.Integer, culture, out var index))
                     return index;
             }
 
@@ -52,10 +52,16 @@ namespace Bonsai.OpenNI
         {
             if (destinationType == typeof(string))
             {
-                var index = (int)value;
                 var devices = OpenNIWrapper.OpenNI.EnumerateDevices();
+                if (devices.Length == 0)
+                    return null;
+
+                var index = (int)value;
+                if (index < 0 || index >= devices.Length)
+                    index = 0;
+
                 var device = devices[index];
-                return $"{value} - {device.Name} ({device.Vendor})";
+                return ($"{index} - {device.Name} ({device.Vendor})").ToString(culture);
             }
 
             return base.ConvertFrom(context, culture, value);
