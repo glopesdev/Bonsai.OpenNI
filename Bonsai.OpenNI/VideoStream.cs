@@ -33,7 +33,6 @@ namespace Bonsai.OpenNI
         public override IObservable<IplImage> Process(IObservable<OpenNIWrapper.Device> source)
             => source
                 .Select(device => {
-
                     var stream = device.CreateVideoStream(sensorType);
                     stream.VideoMode = new OpenNIWrapper.VideoMode
                     {
@@ -44,12 +43,19 @@ namespace Bonsai.OpenNI
                     stream.Mirroring = Mirroring;
                     return stream;
                 })
-                .Where(stream => stream.IsValid && stream.Start() == OpenNIWrapper.OpenNI.Status.Ok)
                 .SelectMany(stream =>
-                    Observable.FromEvent<OpenNIWrapper.VideoStream.VideoStreamNewFrame, OpenNIWrapper.VideoStream>(
+                {
+                    if (!stream.IsValid)
+                        return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("OpenNI device stream is not valid."));
+
+                    if (stream.Start() != OpenNIWrapper.OpenNI.Status.Ok)
+                        return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("Failed to start OpenNI device."));
+
+                    return Observable.FromEvent<OpenNIWrapper.VideoStream.VideoStreamNewFrame, OpenNIWrapper.VideoStream>(
                         handler => stream.OnNewFrame += handler,
-                        handler => stream.OnNewFrame -= handler))
-                .Where(stream => stream.IsValid && stream.IsFrameAvailable())
+                        handler => stream.OnNewFrame -= handler);
+                })
+                .Where(stream => stream.IsFrameAvailable())
                 .Select(stream =>
                 {
                     using var frame = stream.ReadFrame();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bonsai.Reactive;
+using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
 
@@ -20,6 +21,9 @@ namespace Bonsai.OpenNI
             => Observable.Defer(() =>
                 {
                     var devices = OpenNIWrapper.OpenNI.EnumerateDevices();
+                    if (Index < 0 || Index >= devices.Length)
+                        return Observable.Throw<OpenNIWrapper.Device>(new IndexOutOfRangeException("Index for OpenNI device is out of range."));
+
                     var deviceInfo = devices[Index];
                     var device = deviceInfo.OpenDevice();
                     return Observable
