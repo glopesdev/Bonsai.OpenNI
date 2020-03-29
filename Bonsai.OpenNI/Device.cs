@@ -9,10 +9,6 @@ namespace Bonsai.OpenNI
     [Description("Creates and connects to an OpenNI device.")]
     public class Device : Source<OpenNIWrapper.Device>
     {
-#pragma warning disable IDE0052 // Remove unread private members
-        readonly Context context = Context.Instance; // initializes OpenNI 
-#pragma warning restore IDE0052 // Remove unread private members
-
         [TypeConverter(typeof(DeviceConverter))]
         [Description("The index of the device.")]
         public int Index { get; set; }
@@ -20,6 +16,8 @@ namespace Bonsai.OpenNI
         public override IObservable<OpenNIWrapper.Device> Generate()
             => Observable.Defer(() =>
                 {
+                    var context = Context.Instance; // initializes OpenNI 
+
                     var devices = OpenNIWrapper.OpenNI.EnumerateDevices();
                     if (Index < 0 || Index >= devices.Length)
                         return Observable.Throw<OpenNIWrapper.Device>(new IndexOutOfRangeException("Index for OpenNI device is out of range."));
