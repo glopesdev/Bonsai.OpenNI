@@ -5,18 +5,21 @@ using System.Reactive.Linq;
 
 namespace Bonsai.OpenNI
 {
-    public abstract class VideoStream : Combinator<OpenNIWrapper.Device, IplImage>
+    public class VideoStream : Combinator<OpenNIWrapper.Device, IplImage>
     {
+        const OpenNIWrapper.Device.SensorType DefaulSensorType = OpenNIWrapper.Device.SensorType.Depth;
+        const OpenNIWrapper.VideoMode.PixelFormat DefaulPixelFormat = OpenNIWrapper.VideoMode.PixelFormat.Depth1Mm;
+        static readonly Size DefaultSize = new Size(640, 480);
         const int DefaultFrameRate = 30;
         const bool DefaultMirroring = false;
-        static readonly Size DefaultSize = new Size(640, 480);
 
-        readonly OpenNIWrapper.Device.SensorType sensorType;
+        [Description("The sensor type.")]
+        [DefaultValue(DefaulSensorType)]
+        public OpenNIWrapper.Device.SensorType SensorType { get; set; } = DefaulSensorType;
 
-        public VideoStream(OpenNIWrapper.Device.SensorType sensorType)
-            => this.sensorType = sensorType;
-
-        public abstract OpenNIWrapper.VideoMode.PixelFormat PixelFormat { get; set; }
+        [Description("The pixel format.")]
+        [DefaultValue(DefaulPixelFormat)]
+        public OpenNIWrapper.VideoMode.PixelFormat PixelFormat { get; set; } = DefaulPixelFormat;
 
         [Description("The size of the image.")]
         public Size Size { get; set; } = DefaultSize;
@@ -33,7 +36,7 @@ namespace Bonsai.OpenNI
             => source
                 .SelectMany(device =>
                 {
-                    var stream = device.CreateVideoStream(sensorType);
+                    var stream = device.CreateVideoStream(SensorType);
                     stream.VideoMode = new OpenNIWrapper.VideoMode
                     {
                         DataPixelFormat = PixelFormat,
