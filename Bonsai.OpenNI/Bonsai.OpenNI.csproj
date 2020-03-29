@@ -4,9 +4,9 @@
     <TargetFrameworks>net462</TargetFrameworks>
     <Title>Bonsai - OpenNI</Title>
     <Description>A Bonsai library for interfacing with depth cameras through OpenNI 2.</Description>
-    <Version>1.0.2</Version>
+    <Version>1.0.0</Version>
     <Authors>Gonçalo Lopes</Authors>
-    <Copyright>Copyright © Gonçalo Lopes 2011-2020</Copyright>
+    <Copyright>Copyright © Gonçalo Lopes 2020</Copyright>
     <ProjectUrl>https://bonsai-rx.org</ProjectUrl>
     <PackageLicenseUrl>https://bonsai-rx.org/license</PackageLicenseUrl>
     <PackageIconUrl>https://bonsai-rx.org/assets/images/bonsai.png</PackageIconUrl>
