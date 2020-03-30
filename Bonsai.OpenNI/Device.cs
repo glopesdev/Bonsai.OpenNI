@@ -1,5 +1,4 @@
-﻿using Bonsai.Reactive;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
 

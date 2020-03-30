@@ -105,10 +105,9 @@ namespace Bonsai.OpenNI
                         case OpenNIWrapper.VideoMode.PixelFormat.Depth100Um:
                         case OpenNIWrapper.VideoMode.PixelFormat.Gray16:
                             {
-                                // convert to 1F32 because threshold does not support 1U16
-                                var image = new IplImage(size, IplDepth.F32, 1);
+                                var image = new IplImage(size, IplDepth.U16, 1);
                                 var frameHeader = new Mat(size, Depth.U16, 1, frame.Data, frame.DataStrideBytes);
-                                CV.Convert(frameHeader, image);
+                                CV.Copy(frameHeader, image);
                                 return image;
                             }
 
