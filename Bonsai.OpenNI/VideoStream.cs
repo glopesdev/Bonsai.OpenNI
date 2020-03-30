@@ -8,48 +8,70 @@ namespace Bonsai.OpenNI
     public class VideoStream : Combinator<OpenNIWrapper.Device, IplImage>
     {
         const OpenNIWrapper.Device.SensorType DefaulSensorType = OpenNIWrapper.Device.SensorType.Depth;
+        const bool DefaultMirroring = false;
         const OpenNIWrapper.VideoMode.PixelFormat DefaulPixelFormat = OpenNIWrapper.VideoMode.PixelFormat.Depth1Mm;
         static readonly Size DefaultSize = new Size(640, 480);
         const int DefaultFrameRate = 30;
-        const bool DefaultMirroring = false;
 
         [Description("The sensor type.")]
         [DefaultValue(DefaulSensorType)]
         public OpenNIWrapper.Device.SensorType SensorType { get; set; } = DefaulSensorType;
 
+        [Description("Mirrors the image when true.")]
+        [DefaultValue(DefaultMirroring)]
+        public bool Mirroring { get; set; } = DefaultMirroring;
+
+        [Category("Video Mode")]
         [Description("The pixel format.")]
         [DefaultValue(DefaulPixelFormat)]
         public OpenNIWrapper.VideoMode.PixelFormat PixelFormat { get; set; } = DefaulPixelFormat;
 
+        [Category("Video Mode")]
         [Description("The size of the image.")]
         public Size Size { get; set; } = DefaultSize;
 
+        [Category("Video Mode")]
         [Description("The frame rate in frames per second.")]
         [DefaultValue(DefaultFrameRate)]
         public int FrameRate { get; set; } = DefaultFrameRate;
 
-        [Description("Mirrors the image when true.")]
-        [DefaultValue(DefaultMirroring)]
-        public bool Mirroring { get; set; } = DefaultMirroring;
+        //[Category("Camera Settings")]
+        //public bool AutoExposure { get; set; }
+
+        //[Category("Camera Settings")]
+        //public bool AutoWhiteBalance { get; set; }
+
+        //[Category("Camera Settings")]
+        //public int Exposure { get; set; }
+
+        //[Category("Camera Settings")]
+        //public int Gain { get; set; }
 
         public override IObservable<IplImage> Process(IObservable<OpenNIWrapper.Device> source)
             => source
                 .SelectMany(device =>
                 {
                     var stream = device.CreateVideoStream(SensorType);
-                    stream.VideoMode = new OpenNIWrapper.VideoMode
-                    {
-                        DataPixelFormat = PixelFormat,
-                        Fps = FrameRate,
-                        Resolution = new OpenNIWrapper.Size(this.Size.Width, this.Size.Height),
-                    };
                     stream.Mirroring = Mirroring;
+                    try
+                    {
+                        stream.VideoMode = new OpenNIWrapper.VideoMode
+                        {
+                            DataPixelFormat = PixelFormat,
+                            Fps = FrameRate,
+                            Resolution = new OpenNIWrapper.Size(this.Size.Width, this.Size.Height),
+                        };
+                    }
+                    catch
+                    {
+                        return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("Video mode not supported by OpenNI video stream."));
+                    }
 
                     if (!stream.IsValid)
-                        return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("OpenNI device stream is not valid."));
+                        return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("OpenNI video stream is not valid."));
 
                     if (stream.Start() != OpenNIWrapper.OpenNI.Status.Ok)
-                        return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("Failed to start OpenNI device."));
+                        return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("Failed to start OpenNI video stream."));
 
                     return Observable.FromEvent<OpenNIWrapper.VideoStream.VideoStreamNewFrame, OpenNIWrapper.VideoStream>(
                         handler => stream.OnNewFrame += handler,
