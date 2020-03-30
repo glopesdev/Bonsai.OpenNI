@@ -20,7 +20,7 @@ namespace Bonsai.OpenNI
 
                     var devices = OpenNIWrapper.OpenNI.EnumerateDevices();
                     if (Index < 0 || Index >= devices.Length)
-                        return Observable.Throw<OpenNIWrapper.Device>(new IndexOutOfRangeException("Index for OpenNI device is out of range."));
+                        return Observable.Throw<OpenNIWrapper.Device>(new ArgumentOutOfRangeException(nameof(Index)));
 
                     var deviceInfo = devices[Index];
                     var device = deviceInfo.OpenDevice();
