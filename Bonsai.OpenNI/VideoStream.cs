@@ -51,10 +51,18 @@ namespace Bonsai.OpenNI
 
         public override IObservable<IplImage> Process(IObservable<OpenNIWrapper.Device> source)
             => source
-                .SelectMany(device =>
+                .SelectMany(device => Observable.Defer(() =>
                 {
                     var stream = device.CreateVideoStream(SensorType);
+                    return Observable
+                         .Return(stream)
+                         .Concat(Observable.Never<OpenNIWrapper.VideoStream>())
+                         .Finally(() => stream.Dispose());
+                }))
+                .SelectMany(stream =>
+                {
                     stream.Mirroring = Mirroring;
+
                     try
                     {
                         stream.VideoMode = new OpenNIWrapper.VideoMode
@@ -68,6 +76,7 @@ namespace Bonsai.OpenNI
                     {
                         return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("Video mode not supported by OpenNI video stream."));
                     }
+
                     if (Crop)
                         stream.Cropping = CropRectangle;
 
