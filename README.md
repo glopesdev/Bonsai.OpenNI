@@ -20,3 +20,4 @@ To use this library you have to perfom the following:
 3. From the toolbox, under `Combinator/OpenNI`, drag a `VideoStream` into the workspace. Make sure it connects to the `Device`.
 4. In the properties, set `Sensor Type` to the type of stream you want (`Depth`, `Ir` or `Color`). Make sure to set the properties, under the `Video Mode`category, to values supported by the physical device.
 5. A `Device` may support more than one `VideoStream` connected simultaneously.
+6. In the toolbox, under `Transform/OpenNI`, you can find `DepthTruncate`. It allows to truncate values that are less than `NearThresholdValue` and greater than `FarThresholdValue` properties. The output can be binarized by setting the `Binary` property. The output can also be converted to 8 bit, by setting the `Convert8Bit` property to `true`. This allows the connection to `FindContours`. 
