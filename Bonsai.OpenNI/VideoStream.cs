@@ -46,20 +46,8 @@ namespace Bonsai.OpenNI
         public bool Crop { get; set; } = DefaultCrop;
 
         [Category("Cropping")]
-        [Description("Crops the video stream.")]
+        [Description("The video stream cropping rectangle.")]
         public Rectangle CropRectangle { get; set; } = DefaultCropRectangle;
-
-        //[Category("Camera Settings")]
-        //public bool AutoExposure { get; set; }
-
-        //[Category("Camera Settings")]
-        //public bool AutoWhiteBalance { get; set; }
-
-        //[Category("Camera Settings")]
-        //public int Exposure { get; set; }
-
-        //[Category("Camera Settings")]
-        //public int Gain { get; set; }
 
         public override IObservable<IplImage> Process(IObservable<OpenNIWrapper.Device> source)
             => source
