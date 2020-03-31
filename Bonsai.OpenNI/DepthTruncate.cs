@@ -39,9 +39,16 @@ namespace Bonsai.OpenNI
         public bool Convert8Bit { get; set; } = DefaultConvert8Bit;
 
         public override IObservable<IplImage> Process(IObservable<IplImage> source)
-            => source.Select(input => Convert8Bit
-                    ? Process8U(input)
-                    : Process16U(input));
+            => source.SelectMany(input =>
+            {
+                if (input.Depth != IplDepth.U16)
+                    return Observable.Throw<IplImage>(new Exception($"{nameof(DepthTruncate)} can only handle 16 bit single channel depth maps."));
+
+                if (Convert8Bit)
+                    return Observable.Return(Process8U(input));
+
+                return Observable.Return(Process16U(input));
+            });
 
         IplImage Process8U(IplImage input)
         {
