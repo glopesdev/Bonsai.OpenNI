@@ -1,17 +1,22 @@
 ﻿using OpenCV.Net;
 using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Reactive.Linq;
 
 namespace Bonsai.OpenNI
 {
     public class VideoStream : Combinator<OpenNIWrapper.Device, IplImage>
     {
+        const int DefaultWidth = 640;
+        const int DefaultHeight = 480;
         const OpenNIWrapper.Device.SensorType DefaulSensorType = OpenNIWrapper.Device.SensorType.Depth;
         const bool DefaultMirroring = false;
         const OpenNIWrapper.VideoMode.PixelFormat DefaulPixelFormat = OpenNIWrapper.VideoMode.PixelFormat.Depth1Mm;
-        static readonly Size DefaultSize = new Size(640, 480);
+        static readonly System.Drawing.Size DefaultSize = new System.Drawing.Size(DefaultWidth, DefaultHeight);
         const int DefaultFrameRate = 30;
+        const bool DefaultCrop = false;
+        static readonly Rectangle DefaultCropRectangle = new Rectangle(0, 0, DefaultWidth, DefaultHeight);
 
         [Description("The sensor type.")]
         [DefaultValue(DefaulSensorType)]
@@ -28,12 +33,21 @@ namespace Bonsai.OpenNI
 
         [Category("Video Mode")]
         [Description("The size of the image.")]
-        public Size Size { get; set; } = DefaultSize;
+        public System.Drawing.Size Size { get; set; } = DefaultSize;
 
         [Category("Video Mode")]
         [Description("The frame rate in frames per second.")]
         [DefaultValue(DefaultFrameRate)]
         public int FrameRate { get; set; } = DefaultFrameRate;
+
+        [Category("Cropping")]
+        [Description("Crops the video stream.")]
+        [DefaultValue(DefaultCrop)]
+        public bool Crop { get; set; } = DefaultCrop;
+
+        [Category("Cropping")]
+        [Description("Crops the video stream.")]
+        public Rectangle CropRectangle { get; set; } = DefaultCropRectangle;
 
         //[Category("Camera Settings")]
         //public bool AutoExposure { get; set; }
@@ -66,6 +80,8 @@ namespace Bonsai.OpenNI
                     {
                         return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("Video mode not supported by OpenNI video stream."));
                     }
+                    if (Crop)
+                        stream.Cropping = CropRectangle;
 
                     if (!stream.IsValid)
                         return Observable.Throw<OpenNIWrapper.VideoStream>(new Exception("OpenNI video stream is not valid."));
@@ -81,7 +97,7 @@ namespace Bonsai.OpenNI
                 .Select(stream =>
                 {
                     using var frame = stream.ReadFrame();
-                    var size = new Size(frame.FrameSize.Width, frame.FrameSize.Height);
+                    var size = new OpenCV.Net.Size(frame.FrameSize.Width, frame.FrameSize.Height);
 
                     switch (frame.VideoMode.DataPixelFormat)
                     {
@@ -121,5 +137,11 @@ namespace Bonsai.OpenNI
 
         public void ResetSize()
             => Size = DefaultSize;
+
+        public bool ShouldSerializeCropRectangle()
+            => CropRectangle != DefaultCropRectangle;
+
+        public void ResetCropRectangle()
+            => CropRectangle = DefaultCropRectangle;
     }
 }
